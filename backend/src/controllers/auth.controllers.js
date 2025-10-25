@@ -97,9 +97,29 @@ async function loginUser(req, res) {
   }
 }
 
+// function logoutUser(req, res) {
+//   res.clearCookie("token");
+//   return res.status(200).json({
+//     message: "User logged out successfully",
+//   });
+// }
 function logoutUser(req, res) {
-  res.clearCookie("token");
-  res.status(200).json({});
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+    });
+
+    return res.status(200).json({
+      message: "User logged out successfully",
+    });
+  } catch (error) {
+    console.error("Logout error:", error.message);
+    return res.status(500).json({
+      message: "Something went wrong during logout",
+      error: error.message,
+    });
+  }
 }
 
 async function registerFoodPartner(req, res) {
