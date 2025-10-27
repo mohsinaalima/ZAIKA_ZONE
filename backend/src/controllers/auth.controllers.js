@@ -123,7 +123,7 @@ function logoutUser(req, res) {
 }
 
 async function registerFoodPartner(req, res) {
-  const { name, email, Password } = req.body;
+  const { name, email, password } = req.body;
   const isAccountExists = await foodPartnerModel.findOne({ email });
 
 if (isAccountExists) {
@@ -132,12 +132,12 @@ if (isAccountExists) {
       message: "Account already exists",
     });
   }
-  const hashedPassword = await bcrypt.hash(Password, 10);
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   const foodPartner = await foodPartnerModel.create({
     name,
     email,
-    Password: hashedPassword,
+    password: hashedPassword,
   });
   const token = jwt.sign(
     {
@@ -159,7 +159,7 @@ if (isAccountExists) {
 }
 
 async function loginFoodPartner(req, res) {
-  const { email, Password } = req.body;
+  const { email, password } = req.body;
   const foodPartner = await foodPartnerModel.findOne({ email });
   if (!foodPartner) {
     return res.status(400).json({
@@ -167,7 +167,7 @@ async function loginFoodPartner(req, res) {
     });
   }
 
-  const isPasswordValid = await bcrypt.compare(Password, foodPartner.Password);
+  const isPasswordValid = await bcrypt.compare(password, foodPartner.password);
   if (!isPasswordValid) {
     return res.status(400).json({
       message: "Invalid email or password",
