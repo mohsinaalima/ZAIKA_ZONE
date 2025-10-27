@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 const foodSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -13,10 +14,20 @@ const foodSchema = new mongoose.Schema({
     },
     foodPartner: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "foodPartner",
+        ref: "foodpartner"
     },
-});
+    likeCount: {
+        type: Number,
+        default: 0
+    },
+    savesCount: {
+        type: Number,
+        default: 0
+    }
+})
 
-const foodModel = mongoose.model('Food', foodSchema);
+
+const foodModel = mongoose.model("food", foodSchema);
+
 
 module.exports = foodModel;
