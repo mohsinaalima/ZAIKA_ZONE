@@ -109,4 +109,4 @@ const ReelFeed = ({ items = [], onLike, onSave, emptyMessage = 'No videos yet.' 
   )
 }
 
-export default ReelFeed
+export default ReelFeed;

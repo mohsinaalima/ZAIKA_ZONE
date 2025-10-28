@@ -1,44 +1,46 @@
+// 🟢 CHANGED FILE: src/pages/auth/FoodPartnerLogin.jsx
 import React from 'react';
 import '../../styles/auth-shared.css';
-import axios from 'axios';
+import api from '../../api/axios.js'; // 🟢 using centralized axios
 import { useNavigate } from 'react-router-dom';
 
 const FoodPartnerLogin = () => {
-
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const email = e.target.email.value;
     const password = e.target.password.value;
 
-    const response = await axios.post("http://localhost:3000/api/auth/food-partner/login", {
-      email,
-      password
-    }, { withCredentials: true });
+    try {
+      const res = await api.post("/auth/food-partner/login", { email, password });
+      console.log("✅ Login Success:", res.data);
 
-    console.log(response.data);
+      // optional: store token
+      // localStorage.setItem("token", res.data.token);
 
-    navigate("/create-food"); // Redirect to create food page after login
-
+      navigate("/feed"); // 🟢 redirect to feed page
+    } catch (err) {
+      console.error("❌ Login failed:", err);
+      alert(err.response?.data?.message || "Error logging in.");
+    }
   };
 
   return (
     <div className="auth-page-wrapper">
-      <div className="auth-card" role="region" aria-labelledby="partner-login-title">
+      <div className="auth-card">
         <header>
-          <h1 id="partner-login-title" className="auth-title">Partner login</h1>
-          <p className="auth-subtitle">Access your dashboard and manage orders.</p>
+          <h1 className="auth-title">Partner login</h1>
+          <p className="auth-subtitle">Access your dashboard and manage your food content.</p>
         </header>
-        <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <form className="auth-form" onSubmit={handleSubmit}>
           <div className="field-group">
-            <label htmlFor="email">Email</label>
-            <input id="email" name="email" type="email" placeholder="business@example.com" autoComplete="email" />
+            <label>Email</label>
+            <input name="email" type="email" placeholder="business@example.com" />
           </div>
           <div className="field-group">
-            <label htmlFor="password">Password</label>
-            <input id="password" name="password" type="password" placeholder="Password" autoComplete="current-password" />
+            <label>Password</label>
+            <input name="password" type="password" placeholder="Password" />
           </div>
           <button className="auth-submit" type="submit">Sign In</button>
         </form>
