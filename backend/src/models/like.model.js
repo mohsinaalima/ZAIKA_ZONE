@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const saveSchema = new mongoose.Schema(
+const likeSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -18,7 +18,7 @@ const saveSchema = new mongoose.Schema(
   }
 );
 
-// ✅ Prevent duplicate saves
-saveSchema.index({ user: 1, food: 1 }, { unique: true });
+// ✅ Prevent duplicate likes (user can't like same food twice)
+likeSchema.index({ user: 1, food: 1 }, { unique: true });
 
-module.exports = mongoose.model("save", saveSchema);
+module.exports = mongoose.model("like", likeSchema);

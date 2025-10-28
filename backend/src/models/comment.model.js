@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const saveSchema = new mongoose.Schema(
+const commentSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -12,13 +12,15 @@ const saveSchema = new mongoose.Schema(
       ref: "food",
       required: true,
     },
+    text: {
+      type: String,
+      required: [true, "Comment text is required"],
+      trim: true,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-// ✅ Prevent duplicate saves
-saveSchema.index({ user: 1, food: 1 }, { unique: true });
-
-module.exports = mongoose.model("save", saveSchema);
+module.exports = mongoose.model("comment", commentSchema);
