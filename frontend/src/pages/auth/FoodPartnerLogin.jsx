@@ -1,52 +1,79 @@
-// 🟢 CHANGED FILE: src/pages/auth/FoodPartnerLogin.jsx
-import React from 'react';
-import '../../styles/auth-shared.css';
-import api from '../../api/axios.js'; // 🟢 using centralized axios
-import { useNavigate } from 'react-router-dom';
+import React from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const FoodPartnerLogin = () => {
+const FoodPartnerLogin = ({ onLoginSuccess }) => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const email = e.target.email.value;
-    const password = e.target.password.value;
+    const loginData = {
+      email: e.target.email.value,
+      password: e.target.password.value,
+    };
 
     try {
-      const res = await api.post("/auth/food-partner/login", { email, password });
-      console.log("✅ Login Success:", res.data);
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/food-partner/login",
+        loginData,
+        { withCredentials: true },
+      );
 
-      // optional: store token
-      // localStorage.setItem("token", res.data.token);
-
-      navigate("/feed"); // 🟢 redirect to feed page
+      if (response.data) {
+        // ✅ Map 'foodPartner' to the 'user' state with 'partner' role
+        onLoginSuccess({
+          ...response.data.foodPartner,
+          role: "partner",
+        });
+        navigate("/feed");
+      }
     } catch (err) {
-      console.error("❌ Login failed:", err);
-      alert(err.response?.data?.message || "Error logging in.");
+      console.error(
+        "Login failed:",
+        err.response?.data?.message || err.message,
+      );
     }
   };
 
   return (
-    <div className="auth-page-wrapper">
-      <div className="auth-card">
-        <header>
-          <h1 className="auth-title">Partner login</h1>
-          <p className="auth-subtitle">Access your dashboard and manage your food content.</p>
+    <div className="min-h-screen bg-brand-dark flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white/5 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10">
+        <header className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-white mb-2">Partner Portal</h1>
+          <p className="text-slate-400">
+            Manage your kitchen and share your dishes.
+          </p>
         </header>
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <div className="field-group">
-            <label>Email</label>
-            <input name="email" type="email" placeholder="business@example.com" />
+
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-slate-300 ml-1">
+              Business Email
+            </label>
+            <input
+              name="email"
+              type="email"
+              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-blue outline-none transition-all"
+              required
+            />
           </div>
-          <div className="field-group">
-            <label>Password</label>
-            <input name="password" type="password" placeholder="Password" />
+
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-slate-300 ml-1">
+              Password
+            </label>
+            <input
+              name="password"
+              type="password"
+              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-brand-blue outline-none transition-all"
+              required
+            />
           </div>
-          <button className="auth-submit" type="submit">Sign In</button>
+
+          <button className="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-500/20">
+            Sign In as Partner
+          </button>
         </form>
-        <div className="auth-alt-action">
-          New partner? <a href="/food-partner/register">Create an account</a>
-        </div>
       </div>
     </div>
   );

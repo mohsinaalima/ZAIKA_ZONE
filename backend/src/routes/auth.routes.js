@@ -1,5 +1,6 @@
 const express = require('express');
 const authController = require("../controllers/auth.controller")
+const { authOptionalMiddleware } = require("../middlewares/auth.middleware");
 
 const router = express.Router();
 
@@ -14,6 +15,10 @@ router.post('/user/logout', authController.logoutUser)
 router.post('/food-partner/register', authController.registerFoodPartner)
 router.post('/food-partner/login', authController.loginFoodPartner)
 router.post('/food-partner/logout', authController.logoutFoodPartner)
+
+
+
+router.get('/check-auth', authOptionalMiddleware, authController.checkAuth);
 
 
 

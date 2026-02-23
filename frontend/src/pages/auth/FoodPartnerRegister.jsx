@@ -1,79 +1,131 @@
-// 🟢 CHANGED FILE: src/pages/auth/FoodPartnerRegister.jsx
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import '../../styles/auth-shared.css';
-import api from '../../api/axios'; // 🟢 using centralized axios
+import React from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-const FoodPartnerRegister = () => {
+const FoodPartnerRegister = ({ onBack }) => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const businessName = e.target.businessName.value;
-    const contactName = e.target.contactName.value;
-    const phone = e.target.phone.value;
-    const email = e.target.email.value;
-    const password = e.target.password.value;
-    const address = e.target.address.value;
+    const data = {
+      name: e.target.name.value,
+      contactName: e.target.contactName.value,
+      phone: e.target.phone.value,
+      address: e.target.address.value,
+      email: e.target.email.value,
+      password: e.target.password.value,
+    };
 
     try {
-      const res = await api.post("/auth/food-partner/register", {
-        name: businessName,
-        contactName,
-        phone,
-        email,
-        password,
-        address,
-      });
-
-      console.log("✅ Registration Success:", res.data);
-      navigate("/feed"); // 🟢 redirect to feed after success
+      const response = await axios.post(
+        "http://localhost:3000/api/auth/food-partner/register",
+        data,
+      );
+      if (response.data) {
+        navigate("/login");
+      }
     } catch (err) {
-      console.error("❌ Registration failed:", err);
-      alert(err.response?.data?.message || "Error registering food partner.");
+      console.error(
+        "Partner registration failed:",
+        err.response?.data?.message || err.message,
+      );
     }
   };
 
   return (
-    <div className="auth-page-wrapper">
-      <div className="auth-card">
-        <header>
-          <h1 className="auth-title">Partner sign up</h1>
-          <p className="auth-subtitle">Grow your business with our platform.</p>
+    <div className="min-h-screen bg-brand-dark flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white/5 backdrop-blur-xl rounded-3xl p-8 shadow-2xl border border-white/10">
+        <button
+          onClick={onBack}
+          className="text-slate-400 hover:text-white mb-4 text-sm flex items-center gap-1 transition-colors"
+        >
+          ← Back to choice
+        </button>
+        <header className="mb-6">
+          <h1 className="text-2xl font-bold text-white">Partner Portal</h1>
+          <p className="text-slate-400 text-sm">
+            Register your kitchen to start sharing dishes.
+          </p>
         </header>
-        <form className="auth-form" onSubmit={handleSubmit}>
-          <div className="field-group">
-            <label>Business Name</label>
-            <input name="businessName" placeholder="Tasty Bites" />
+
+        <form className="space-y-3" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-300 ml-1">
+              Business Name
+            </label>
+            <input
+              name="name"
+              type="text"
+              placeholder="Tasty Kitchen"
+              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-brand-blue outline-none transition-all"
+              required
+            />
           </div>
-          <div className="two-col">
-            <div className="field-group">
-              <label>Contact Name</label>
-              <input name="contactName" placeholder="Jane Doe" />
-            </div>
-            <div className="field-group">
-              <label>Phone</label>
-              <input name="phone" placeholder="+91 98765 43210" />
-            </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-300 ml-1">
+              Chef Name
+            </label>
+            <input
+              name="contactName"
+              type="text"
+              placeholder="Chef Mario"
+              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-brand-blue outline-none transition-all"
+              required
+            />
           </div>
-          <div className="field-group">
-            <label>Email</label>
-            <input name="email" type="email" placeholder="business@example.com" />
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-300 ml-1">
+              Phone
+            </label>
+            <input
+              name="phone"
+              type="tel"
+              placeholder="+1..."
+              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-brand-blue outline-none transition-all"
+              required
+            />
           </div>
-          <div className="field-group">
-            <label>Password</label>
-            <input name="password" type="password" placeholder="Create password" />
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-300 ml-1">
+              Address
+            </label>
+            <input
+              name="address"
+              type="text"
+              placeholder="123 Food Lane"
+              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-brand-blue outline-none transition-all"
+              required
+            />
           </div>
-          <div className="field-group">
-            <label>Address</label>
-            <input name="address" placeholder="123 Market Street" />
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-300 ml-1">
+              Email
+            </label>
+            <input
+              name="email"
+              type="email"
+              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-brand-blue outline-none transition-all"
+              required
+            />
           </div>
-          <button className="auth-submit" type="submit">Create Partner Account</button>
+          <div className="flex flex-col gap-1">
+            <label className="text-xs font-medium text-slate-300 ml-1">
+              Password
+            </label>
+            <input
+              name="password"
+              type="password"
+              className="w-full bg-white/10 border border-white/10 rounded-xl px-4 py-2 text-white focus:ring-2 focus:ring-brand-blue outline-none transition-all"
+              required
+            />
+          </div>
+          <button
+            className="w-full bg-brand-blue hover:bg-blue-600 text-white font-bold py-3 rounded-xl shadow-lg mt-4 transition-all active:scale-[0.98]"
+            type="submit"
+          >
+            Register Partner
+          </button>
         </form>
-        <div className="auth-alt-action">
-          Already a partner? <Link to="/food-partner/login">Sign in</Link>
-        </div>
       </div>
     </div>
   );

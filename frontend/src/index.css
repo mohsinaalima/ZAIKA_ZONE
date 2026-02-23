@@ -1,0 +1,7 @@
+@import "tailwindcss";
+@theme {
+  /* Replace these hex codes with the ones from your old CSS */
+  --color-brand-blue: #1d4ed8; 
+  --color-brand-dark: #0f172a;
+  --color-accent-red: #ef4444;
+}
