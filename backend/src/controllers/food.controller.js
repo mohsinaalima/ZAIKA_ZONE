@@ -1,20 +1,19 @@
 const foodModel = require("../models/food.model");
 const likeModel = require("../models/like.model");
 const saveModel = require("../models/save.model");
-const commentModel = require("../models/comment.model"); // ✅ added for comment feature
+const commentModel = require("../models/comment.model");
 const storageService = require("../services/storage.service");
 const { v4: uuid } = require("uuid");
 
-// ===============================
-// ✅ Create a new Food Item
-// ===============================
 async function createFood(req, res) {
   try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
-    const fileUploadResult = await storageService.uploadFile(req.file.buffer, uuid());
+    // 📤 Upload to ImageKit
+    const fileUploadResult = await storageService.uploadFile(
+      req.file.buffer,
+      uuid(),
+    );
 
     const foodItem = await foodModel.create({
       name: req.body.name,
@@ -23,42 +22,58 @@ async function createFood(req, res) {
       foodPartner: req.foodPartner._id,
     });
 
-    res.status(201).json({
-      message: "Food created successfully",
-      food: foodItem,
-    });
+    res
+      .status(201)
+      .json({ message: "Food created successfully", food: foodItem });
   } catch (error) {
-    console.error("Error creating food:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("UPLOAD ERROR:", error);
+    res.status(500).json({ message: "Upload failed", error: error.message });
   }
 }
 
-// ===============================
-// ✅ Get all Food Items
-// ===============================
 async function getFoodItems(req, res) {
   try {
-    const foodItems = await foodModel.find({})
-      .populate("foodPartner", "name email"); // ✅ added population for clarity
+    const foodItems = await foodModel
+      .find({})
+      .populate("foodPartner", "name email");
 
-    res.status(200).json({
-      message: "Food items fetched successfully",
-      foodItems,
-    });
+    const foodItemsWithStatus = await Promise.all(
+      foodItems.map(async (item) => {
+        let isLiked = false;
+        let isSaved = false;
+
+        // ✅ Defensive check for guests (prevents 500 error)
+        const viewerId = req.user?._id || req.foodPartner?._id;
+
+        if (viewerId) {
+          const [like, save] = await Promise.all([
+            likeModel.findOne({ user: viewerId, food: item._id }),
+            saveModel.findOne({ user: viewerId, food: item._id }),
+          ]);
+          isLiked = !!like;
+          isSaved = !!save;
+        }
+
+        return { ...item.toObject(), isLiked, isSaved };
+      }),
+    );
+
+    res.status(200).json({ foodItems: foodItemsWithStatus });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("FEED ERROR:", error);
+    res.status(500).json({ message: "Could not fetch feed" });
   }
 }
 
-// ===============================
-// ✅ Like or Unlike a Food
-// ===============================
 async function likeFood(req, res) {
   try {
     const { foodId } = req.body;
-    const user = req.user;
+    const user = req.user || req.foodPartner; // ✅ Allow partners to like too
 
-    const isAlreadyLiked = await likeModel.findOne({ user: user._id, food: foodId });
+    const isAlreadyLiked = await likeModel.findOne({
+      user: user._id,
+      food: foodId,
+    });
 
     if (isAlreadyLiked) {
       await likeModel.deleteOne({ user: user._id, food: foodId });
@@ -75,15 +90,15 @@ async function likeFood(req, res) {
   }
 }
 
-// ===============================
-// ✅ Save or Unsave a Food
-// ===============================
 async function saveFood(req, res) {
   try {
     const { foodId } = req.body;
-    const user = req.user;
+    const user = req.user || req.foodPartner;
 
-    const isAlreadySaved = await saveModel.findOne({ user: user._id, food: foodId });
+    const isAlreadySaved = await saveModel.findOne({
+      user: user._id,
+      food: foodId,
+    });
 
     if (isAlreadySaved) {
       await saveModel.deleteOne({ user: user._id, food: foodId });
@@ -100,13 +115,12 @@ async function saveFood(req, res) {
   }
 }
 
-// ===============================
-// ✅ Get Saved Foods for a User
-// ===============================
 async function getSaveFood(req, res) {
   try {
-    const user = req.user;
-    const savedFoods = await saveModel.find({ user: user._id }).populate("food");
+    const user = req.user || req.foodPartner;
+    const savedFoods = await saveModel
+      .find({ user: user._id })
+      .populate("food");
 
     if (!savedFoods || savedFoods.length === 0) {
       return res.status(404).json({ message: "No saved foods found" });
@@ -121,13 +135,10 @@ async function getSaveFood(req, res) {
   }
 }
 
-// ===============================
-// ✅ Add Comment to Food
-// ===============================
 async function addComment(req, res) {
   try {
     const { foodId, text } = req.body;
-    const user = req.user;
+    const user = req.user || req.foodPartner;
 
     if (!text) {
       return res.status(400).json({ message: "Comment text is required" });
@@ -148,9 +159,6 @@ async function addComment(req, res) {
   }
 }
 
-// ===============================
-// ✅ Get Comments for a Food
-// ===============================
 async function getComments(req, res) {
   try {
     const { foodId } = req.params;
